@@ -6,12 +6,9 @@ setup(
     name=__package__,
     version=__version__,
     packages=find_packages(exclude=['build']),
-    package_data={'':['*.so','*h','*angles*','*.txt','*.csv']},
-    #     # If any package contains *.txt files, include them:
-    #     '': ['*.txt'],
-    #     'lut': ['data/lut/*.nc'],
-    #     'aux': ['data/aux/*']
-    # },
+    package_data={'':['*.so','*h','*.png','*.txt','*.csv'],
+
+     },
     include_package_data=True,
 
     url='',

@@ -7,9 +7,8 @@ import glob
 import matplotlib.pyplot as plt
 import lmfit as lm
 
-import RTxploitation as rtx
-
-dir = opj(rtx.__path__[0], '..', 'study_cases', 'vsf', )
+import pffit
+dir = opj(pffit.__path__[0], '..', 'study_cases', 'vsf', )
 dirdata = opj(dir, 'data')
 dirfig = opj(dir, 'fig')
 
@@ -147,10 +146,19 @@ class models:
         group2 = self.P_FF(theta, n2, m2)
         return gamma * group1 + (1 - gamma) * group2
 
+    def asym_RM(self, g, alpha):
+        '''
+        Compute asymmetry parameter from RM parametrization
+        :param g: RM g fitting parameter
+        :param alpha: RM alpha fitting parameter
+        :return:
+        '''
+        gp = (1 + g) ** (2 * alpha)
+        gm = (1 - g) ** (2 * alpha)
+        return (gp + gm) / (gp - gm)
+
 
 class inversion:
-
-
 
     def __init__(self):
         self.m = models()
@@ -212,7 +220,7 @@ class inversion:
 
         pars = lm.Parameters()
 
-        pars.add('n1', value=1.05, min=-1, max=1.35)
+        pars.add('n1', value=1.05, min=0.8, max=1.35)
         pars.add('m1', value=4., min=3.5, max=5)
 
         return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
@@ -229,7 +237,7 @@ class inversion:
             '''
             gamma, g1, g2, alpha1, alpha2 = np.array(list(x.valuesdict().values()))
             simu = model(theta, gamma, g1, g2, alpha1, alpha2)
-            return (np.log(vsf) - np.log(simu)) #/(0.05*np.log(vsf) )
+            return (np.log(vsf) - np.log(simu))  # /(0.05*np.log(vsf) )
 
         pars = lm.Parameters()
         pars.add('gamma', value=0.99, min=0.95, max=1)
@@ -255,9 +263,9 @@ class inversion:
 
         pars = lm.Parameters()
         pars.add('gamma', value=0.7, min=0, max=1)
-        pars.add('n1', value=1.05, min=-1, max=1.35)
+        pars.add('n1', value=1.05, min=0.8, max=1.35)
         pars.add('m1', value=4., min=3.5, max=5)
-        pars.add('n2', value=1.15, min=-1, max=1.35)
+        pars.add('n2', value=1.15, min=0.8, max=1.35)
         pars.add('m2', value=4.5, min=3.5, max=5)
 
         return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model

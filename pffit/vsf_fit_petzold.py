@@ -25,129 +25,21 @@ import lmfit as lm
 import RTxploitation as rtx
 import study_cases.vsf as vsf
 
-m = vsf.phase_function_models.models()
+import pffit
 
-dir = opj(rtx.__path__[0], '..', 'study_cases', 'vsf', )
+fit = pffit.phase_function_models.inversion()
+m = pffit.phase_function_models.models()
+
+dir = pffit.__path__[0]
 dirdata = opj(dir, 'data')
 dirfig = opj(dir, 'fig')
-
-
-def RM_fit(theta, vsf):
-    model = m.P_RM
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        g1, alpha1 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, g1, alpha1)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-
-    pars.add('g1', value=0.9, min=-1, max=1)
-    pars.add('alpha1', value=0.5, min=-0.5, max=10)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def HG_fit(theta, vsf):
-    model = m.P_RM
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        g1 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, g1)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-
-    pars.add('g1', value=0.9, min=-1, max=1)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def FF_fit(theta, vsf):
-    model = m.P_FF
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        n1, m1 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, n1, m1)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-
-    pars.add('n1', value=1.05, min=-1, max=1.35)
-    pars.add('m1', value=4., min=3.5, max=5)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def TTRM_fit(theta, vsf):
-    model = m.P_TTRM
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        gamma, g1, g2, alpha1, alpha2 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, gamma, g1, g2, alpha1, alpha2)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-    pars.add('gamma', value=0.99, min=0., max=1)
-    pars.add('g1', value=0.9, min=0, max=1)
-    pars.add('g2', value=-0.9, min=-1, max=-0.05)
-    pars.add('alpha1', value=0.5, min=0, max=2.5)
-    pars.add('alpha2', value=0.5, min=0, max=2.5)
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def TTFF_fit(theta, vsf):
-    model = m.P_TTFF
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        gamma, n1, m1, n2, m2 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, gamma, n1, m1, n2, m2)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-    pars.add('gamma', value=0.7, min=0, max=1)
-    pars.add('n1', value=1.05, min=-1, max=1.35)
-    pars.add('m1', value=4., min=3.5, max=5)
-    pars.add('n2', value=1.15, min=-1, max=1.35)
-    pars.add('m2', value=4.5, min=3.5, max=5)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
 
 
 # -------------------
 # fitting section
 # -------------------
-models = (FF_fit, RM_fit, TTFF_fit, TTRM_fit)
+models = (fit.FF_fit, fit.RM_fit, fit.FFRM_fit, fit.TTRM_fit)
+
 file = '/home/harmel/Dropbox/work/git/vrtc/RTxploitation/RTxploitation/../study_cases/vsf/data/petzold_data.txt'
 df = pd.read_csv(file, skiprows=3, sep='\s+', index_col=0, skipinitialspace=True, na_values='inf')
 
@@ -290,7 +182,7 @@ for i, (label, group) in enumerate(df.iteritems()):
 theta_ = np.linspace(0, 180, 100000)
 back_ang = theta_[theta_ > 90]
 
-models = (FF_fit, RM_fit, TTFF_fit, TTRM_fit)
+
 
 rows, cols = 4, 4
 axslin = [[0 for x in range(rows)] for x in range(cols)]

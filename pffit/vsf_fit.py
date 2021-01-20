@@ -12,28 +12,18 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 color_cycle = ['dimgrey', 'firebrick', 'darkorange', 'olivedrab',
                'dodgerblue', 'magenta']
 plt.ioff()
-plt.rcParams.update({'font.family': 'Times New Roman',
+plt.rcParams.update({'font.family': 'serif',
                      'font.size': 16, 'axes.labelsize': 20,
-                     #'mathtext.default': 'regular',
-                     #'mathtext.fontset': 'custom',
-                     # 'xtick.minor.visible': True,
-                     # 'xtick.major.size': 5,
-                     # 'ytick.minor.visible': True,
-                     # 'ytick.major.size': 5,
+                     'mathtext.fontset': 'stix',
                      'axes.prop_cycle': plt.cycler('color', color_cycle)})
-rc = {"font.family" : "serif",
-      "mathtext.fontset" : "stix"}
-plt.rcParams.update(rc)
 plt.rcParams["font.serif"] = ["Times New Roman"] + plt.rcParams["font.serif"]
 
-import lmfit as lm
+import pffit
 
-import RTxploitation as rtx
-import study_cases.vsf as vsf
+fit = pffit.phase_function_models.inversion()
+m = pffit.phase_function_models.models()
 
-m = vsf.phase_function_models.models()
-
-dir = opj('/DATA/git/vrtc/RTxploitation/', 'study_cases', 'vsf', )
+dir = pffit.__path__[0]
 dirdata = opj(dir, 'data')
 
 trunc = False
@@ -46,147 +36,10 @@ else:
 
 files = glob.glob(opj(dirdata, 'normalized_vsf*txt'))
 
-
-def RM_fit(theta, vsf):
-    model = m.P_RM
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        g1, alpha1 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, g1, alpha1)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-
-    pars.add('g1', value=0.9, min=-1, max=1)
-    pars.add('alpha1', value=0.5, min=-0.5, max=10)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def HG_fit(theta, vsf):
-    model = m.P_RM
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        g1 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, g1)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-
-    pars.add('g1', value=0.9, min=-1, max=1)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def FF_fit(theta, vsf):
-    model = m.P_FF
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        n1, m1 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, n1, m1)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-
-    pars.add('n1', value=1.05, min=-1, max=1.35)
-    pars.add('m1', value=4., min=3.5, max=5)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def TTRM_fit(theta, vsf):
-    model = m.P_TTRM
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        gamma, g1, g2, alpha1, alpha2 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, gamma, g1, g2, alpha1, alpha2)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-    pars.add('gamma', value=0.99, min=0.95, max=1)
-    pars.add('g1', value=0.9, min=0, max=1)
-    pars.add('g2', value=-0.9, min=-.928, max=-0.05)
-    pars.add('alpha1', value=0.5, min=0, max=2.5)
-    pars.add('alpha2', value=0.5, min=0, max=2.5)
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def TTFF_fit(theta, vsf):
-    model = m.P_TTFF
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        gamma, n1, m1, n2, m2 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, gamma, n1, m1, n2, m2)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-    pars.add('gamma', value=0.7, min=0, max=1)
-    pars.add('n1', value=1.05, min=-1, max=1.35)
-    pars.add('m1', value=4., min=3.5, max=5)
-    pars.add('n2', value=1.15, min=-1, max=1.35)
-    pars.add('m2', value=4.5, min=3.5, max=5)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
-def FFRM_fit(theta, vsf):
-    model = m.P_FFRM
-
-    def objfunc(x, theta, vsf):
-        '''
-        Objective function to be minimized
-        :param x: vector of unknowns
-        :param theta: scattering angle
-        :param vsf: phase function
-        '''
-        gamma, n1, m1, g2, alpha2 = np.array(list(x.valuesdict().values()))
-        simu = model(theta, gamma, n1, m1, g2, alpha2)
-        return np.log(vsf) - np.log(simu)
-
-    pars = lm.Parameters()
-    pars.add('gamma', value=0.7, min=0, max=1)
-    pars.add('n1', value=1.05, min=-1, max=1.35)
-    pars.add('m1', value=4., min=3.5, max=5)
-    pars.add('g2', value=-0.9, min=-.928, max=-0.05)
-    pars.add('alpha2', value=0.5, min=0, max=2.5)
-
-    return lm.Minimizer(objfunc, pars, fcn_args=(theta, vsf)), model
-
-
 # -------------------
 # fitting section
 # -------------------
-models = (FF_fit, RM_fit, FFRM_fit, TTRM_fit)
+models = (fit.TTFF_fit, fit.RM_fit, fit.FFRM_fit, fit.TTRM_fit)
 samples = ['Arizona', 'Chlorella', 'Cylindrotheca', 'Dunaliella', 'Karenia', 'Skeletonema']
 names = ['Arizona dust', r'$\it{C. autotrophica}$', r'$\it{C. closterium}$', r'$\it{D. salina}$',
          r'$\it{K. mikimotoi}$', r'$\it{S. cf. costatum}$']
@@ -194,18 +47,6 @@ file_pattern = '/home/harmel/Dropbox/work/git/vrtc/RTxploitation/RTxploitation/.
 
 theta_ = np.linspace(0, 180, 100000)
 back_ang = theta_[theta_ > 90]
-
-
-def L_RM(g, alpha):
-    '''
-    Compute asymmetry parameter from RM parametrization
-    :param g:
-    :param alpha:
-    :return:
-    '''
-    gp = (1 + g) ** (2 * alpha)
-    gm = (1 - g) ** (2 * alpha)
-    return (gp + gm) / (gp - gm)
 
 
 for icol, model in enumerate(models):
@@ -248,12 +89,12 @@ for icol, model in enumerate(models):
             if model_ == 'TTRM_fit':
                 x = out1.x
                 #                cov = out1.covar[:3, :3]
-                L1 = L_RM(x[1], x[3])
+                L1 = m.asym_RM(x[1], x[3])
                 mu_1 = (2 * x[1] * x[3] * L1 - (1 + x[1] ** 2)) / (2 * x[1] * (x[3] - 1))
-                L2 = L_RM(x[2], x[4])
+                L2 = m.asym_RM(x[2], x[4])
                 mu_2 = (2 * x[2] * x[4] * L2 - (1 + x[2] ** 2)) / (2 * x[2] * (x[4] - 1))
                 mu_ = x[0] * mu_1 + (1 - x[0]) * mu_2
-                print('rseult: ', x[0], mu_1, mu_2, mu_)
+                print('result: ', x[0], mu_1, mu_2, mu_)
                 J = np.array([x[1] - x[2], x[0], 1 - x[0]])
             #                np.matmul(J, np.matmul(cov, J.T))
 
@@ -327,7 +168,7 @@ plt.legend()
 plt.show()
 
 color = ['black', 'blue', 'green', 'red']
-models = (FF_fit, FFRM_fit, RM_fit, TTRM_fit)
+
 for file in files:
     df = pd.read_csv(file, skiprows=8, sep='\t', index_col=0, skipinitialspace=True, na_values='inf')
     basename = os.path.basename(file).replace('.txt', '')
@@ -359,8 +200,6 @@ for file in files:
 
 # fig all
 
-
-models = (FF_fit, RM_fit, FFRM_fit, TTRM_fit)
 samples = ['Arizona', 'Chlorella', 'Cylindrotheca', 'Dunaliella', 'Karenia', 'Skeletonema']
 file_pattern = '/home/harmel/Dropbox/work/git/vrtc/RTxploitation/RTxploitation/../study_cases/vsf/data/normalized_vsf_lov_experiment2015_xxx.txt'
 

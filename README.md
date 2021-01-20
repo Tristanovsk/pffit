@@ -18,10 +18,16 @@ python setup.py install --user
 ```
 
 ## Examples
-
-```buildoutcfg
+To apply the fitting modalities onto provided data (pffit/data) and generate the associated figures (in pffit/fig)
 
 ```
+python pffit/paper_fig.py
+```
+You should get this type of figures in pffit/fig
+
+![phase_function](pffit/fig/article/Chlorella.png)
+
+![retrievals](pffit/fig/article/TTRM_fitting_parameters.png)
 
 ## Contributing
 
@@ -39,4 +45,5 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
  
 ## Warning: 
+
 
