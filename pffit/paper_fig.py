@@ -175,6 +175,7 @@ for param in ('redchi', 'bic', 'aic', 'bb_ratio', 'asymmetry_factor'):
         res_=res[res['model']==model_]
         ax = axs[icol]
         ax.set_title(model_)
+        icolor=0
         for sample, group in res_.groupby('sample'):
             name = group.name.values[0]
             print(name)
@@ -182,15 +183,16 @@ for param in ('redchi', 'bic', 'aic', 'bb_ratio', 'asymmetry_factor'):
                 continue
             if icol == 3:
 
-                ax.plot(group.wavelength, group[param], label=name, linestyle='dashed', lw=2, marker='o', mec='grey',
-                        ms=12, alpha=0.6)
+                ax.plot(group.wavelength, group[param], label=name, linestyle='dashed', lw=2, marker='o',
+                        c=color_cycle[icolor], mec='grey', ms=12, alpha=0.6)
             else:
-                ax.plot(group.wavelength, group[param], linestyle='dashed', lw=2, marker='o', mec='grey', ms=12,
-                        alpha=0.6)
+                ax.plot(group.wavelength, group[param], linestyle='dashed', lw=2, marker='o',
+                        c=color_cycle[icolor], mec='grey', ms=12, alpha=0.6)
             if param == "redchi":
                 ax.set_ylabel(r'${\chi_\nu^2}$')
             else:
                 ax.set_ylabel(param)
+            icolor+=1
 
     axs[-1].set_xlabel('Wavelength (nm)')
     axs[-2].set_xlabel('Wavelength (nm)')
@@ -211,17 +213,24 @@ labels = ['$\gamma$', '$g_1$', '$g_2$', r'$\alpha _1$', r'$\alpha_2$', '$\~b_b$'
 for i, param in enumerate(['gamma', 'g1', 'g2', 'alpha1', 'alpha2', 'bb_ratio', 'asymmetry_factor']):
     ax = axs[i]
     ax.set_ylabel(labels[i])
-    for name, group in res_TTRM.groupby('name'):
+    icolor=0
+    for sample, group in res_TTRM.groupby('sample'):
+        name = group.name.values[0]
         if 'Petzold' in name:
             continue
+        print(name,icolor,color_cycle[icolor])
         # ax.errorbar(group.wavelength,group[param],yerr=group[param+'_std'],label=name,linestyle='dashed',lw=2, marker='o',mec='grey',ms=12,alpha=0.6)
-        ax.errorbar(group.wavelength, group[param], linestyle='dashed', lw=2, marker='o', mec='grey', ms=12, alpha=0.6)
+        ax.errorbar(group.wavelength, group[param], linestyle='dashed', lw=2, marker='o',c=color_cycle[icolor], mec='grey', ms=12, alpha=0.6)
+        icolor+=1
+icolor=0
 for sample, group in res_TTRM.groupby('sample'):
     name = group.name.values[0]
     if 'Petzold' in name:
         continue
-    axs[-1].errorbar(group.wavelength, group[param], label=name, linestyle='dashed', lw=2, marker='o', mec='grey',
+    print(name,icolor,color_cycle[icolor])
+    axs[-1].errorbar(group.wavelength, group[param], label=name, linestyle='dashed', lw=2, marker='o', c=color_cycle[icolor], mec='grey',
                      ms=12, alpha=0.6)
+    icolor+=1
 
 axs[-1].set_visible(False)
 
