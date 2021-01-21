@@ -155,7 +155,9 @@ class models:
         '''
         gp = (1 + g) ** (2 * alpha)
         gm = (1 - g) ** (2 * alpha)
-        return (gp + gm) / (gp - gm)
+        L = (gp + gm) / (gp - gm)
+        asym = (2*g*alpha*L-(1+g**2))/(2*g*(alpha-1))
+        return asym
 
 
 class inversion:
